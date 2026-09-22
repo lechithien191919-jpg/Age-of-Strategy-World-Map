@@ -106,7 +106,7 @@ HTML_CONTENT = """
         }
         .close-modal { background: #ff4d4d; color: white; border: none; text-align: center; }
 
-        /* Màn hình game chứa hình bản đồ và ranh giới */
+        /* Màn hình game */
         .game-body { display: none; flex-direction: column; height: 100vh; position: relative; }
         .country-top-bar {
             position: absolute;
@@ -134,7 +134,6 @@ HTML_CONTENT = """
             z-index: 10;
         }
         
-        /* Khung chứa hình bản đồ thế giới và lớp ranh giới */
         .map-container-wrapper {
             flex: 1;
             display: flex;
@@ -159,7 +158,6 @@ HTML_CONTENT = """
             box-shadow: 0 8px 20px rgba(0,0,0,0.6);
         }
         
-        /* Lớp ranh giới vẽ đè lên hình ảnh */
         .map-overlay-grid {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -171,7 +169,7 @@ HTML_CONTENT = """
             box-sizing: border-box;
         }
         .border-cell {
-            border: 1px dashed rgba(255, 255, 255, 0.4); /* Đường ranh giới mờ đè lên hình */
+            border: 1px dashed rgba(255, 255, 255, 0.4);
             background-color: rgba(0, 0, 0, 0.1);
             cursor: pointer;
             transition: background 0.1s;
@@ -182,7 +180,6 @@ HTML_CONTENT = """
             border: 1px solid #e63946;
         }
 
-        /* Bảng chọn màu tô ranh giới */
         .color-palette {
             background: #1e293b;
             padding: 8px;
@@ -201,7 +198,6 @@ HTML_CONTENT = """
         }
         .color-option.selected { border-color: #fff; transform: scale(1.1); }
 
-        /* Thanh công cụ dưới đáy */
         .bottom-toolbar {
             display: flex;
             justify-content: space-around;
@@ -246,13 +242,117 @@ HTML_CONTENT = """
         <div class="map-container-wrapper">
             <div class="map-image-container">
                 <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrTyhEwc3Z0pVy9IumMD7D6mv6PBo-87apR_sfoXkKAg&s=10" alt="World Map">
-                
                 <div class="map-overlay-grid" id="overlayGrid"></div>
             </div>
         </div>
 
         <div class="color-palette">
-            <div class="color-option selected" style="background: rgba(0,0,0,0.2);" onclick="selectColor('rgba(0,0,0,0.2)', this)" title="Xóa màu"></div>
+            <div class="color-option selected" style="background: rgba(0,0,0,0.2);" onclick="selectColor('rgba(0,0,0,0.2)', this)"></div>
             <div class="color-option" style="background: rgba(230,57,70,0.6);" onclick="selectColor('rgba(230,57,70,0.6)', this)"></div>
-            <div class="color-option"
-            
+            <div class="color-option" style="background: rgba(42,157,143,0.6);" onclick="selectColor('rgba(42,157,143,0.6)', this)"></div>
+            <div class="color-option" style="background: rgba(233,196,106,0.6);" onclick="selectColor('rgba(233,196,106,0.6)', this)"></div>
+            <div class="color-option" style="background: rgba(69,123,157,0.6);" onclick="selectColor('rgba(69,123,157,0.6)', this)"></div>
+        </div>
+
+        <div class="bottom-toolbar">
+            <button class="tool-btn" onclick="goHome()">❌</button>
+            <button class="tool-btn">↩️</button>
+            <button class="tool-btn">↪️</button>
+            <button class="tool-btn active">🖱️</button>
+            <button class="tool-btn">🔲</button>
+            <button class="tool-btn" onclick="openWarMenu()">⚔️</button>
+            <button class="tool-btn" onclick="saveMap()">💾</button>
+        </div>
+    </div>
+
+    <div id="mapModeModal" class="modal">
+        <div class="modal-content">
+            <h3>Map Options</h3>
+            <button class="modal-btn blue" onclick="showMapEditionModal()">🗺️ New Map</button>
+            <button class="modal-btn close-modal" onclick="closeModals()">Đóng</button>
+        </div>
+    </div>
+
+    <div id="mapEditionModal" class="modal">
+        <div class="modal-content">
+            <h3>Map Edition</h3>
+            <button class="modal-btn" onclick="createMap()"><b>World Map Standard</b><br><small>Tải bản đồ thế giới kèm ranh giới</small></button>
+            <button class="modal-btn close-modal" onclick="closeModals()">Đóng</button>
+        </div>
+    </div>
+
+    <div id="warModal" class="modal">
+        <div class="modal-content">
+            <h3>Chế độ Chiến Tranh ⚔️</h3>
+            <button class="modal-btn blue" onclick="alert('Đã bật chế độ tự chọn vùng đánh trên bản đồ!'); closeModals();">🎯 Tự chọn vùng muốn chiếm</button>
+            <button class="modal-btn blue" onclick="alert('Bot đang tự động tấn công các vùng trên bản đồ!'); closeModals();">🤖 Bot tự động chiếm đất</button>
+            <button class="modal-btn close-modal" onclick="closeModals()">Đóng</button>
+        </div>
+    </div>
+
+    <script>
+        let currentColor = 'rgba(230,57,70,0.6)';
+
+        function showMapModeModal() {
+            document.getElementById('mapModeModal').style.display = 'flex';
+        }
+        function showMapEditionModal() {
+            document.getElementById('mapModeModal').style.display = 'none';
+            document.getElementById('mapEditionModal').style.display = 'flex';
+        }
+        function closeModals() {
+            document.getElementById('mapModeModal').style.display = 'none';
+            document.getElementById('mapEditionModal').style.display = 'none';
+            document.getElementById('warModal').style.display = 'none';
+        }
+        
+        function createMap() {
+            closeModals();
+            document.getElementById('homeScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'flex';
+            generateOverlayGrid();
+        }
+
+        function generateOverlayGrid() {
+            const gridContainer = document.getElementById('overlayGrid');
+            gridContainer.innerHTML = '';
+            for (let i = 0; i < 80; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'border-cell';
+                cell.onclick = function() {
+                    this.style.backgroundColor = currentColor;
+                };
+                gridContainer.appendChild(cell);
+            }
+        }
+
+        function selectColor(color, element) {
+            currentColor = color;
+            document.querySelectorAll('.color-option').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+
+        function goHome() {
+            if(confirm("Bạn có muốn thoát về màn hình chính không?")) {
+                document.getElementById('gameScreen').style.display = 'none';
+                document.getElementById('homeScreen').style.display = 'flex';
+            }
+        }
+        function openWarMenu() {
+            document.getElementById('warModal').style.display = 'flex';
+        }
+        function saveMap() {
+            alert("Đã lưu bản đồ ranh giới trên ảnh thành công! 💾");
+        }
+    </script>
+</body>
+</html>
+"""
+
+@app.route('/')
+def index():
+    return render_template_string(HTML_CONTENT)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
+    
