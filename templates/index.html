@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Age of Strategy World Map Editor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="main-container">
+        <h2>My Maps</h2>
+        <div class="search-box">
+            <input type="text" placeholder="Search map...">
+        </div>
+        
+        <!-- Khu vực danh sách map đã lưu -->
+        <div class="map-list" id="mapList">
+            <div class="map-card" onclick="openGame()">
+                <div class="map-info">
+                    <h3>⚡ Kbt</h3>
+                    <p>Countries: 228 | Provinces: 3794</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nút dấu cộng (+) để tạo map mới -->
+        <button class="add-btn" onclick="showMapModeModal()">+</button>
+    </div>
+
+    <!-- Popup 1: Map Mode -->
+    <div id="mapModeModal" class="modal">
+        <div class="modal-content">
+            <h3>Map Mode</h3>
+            <button class="modal-btn blue" onclick="showMapEditionModal()">⚡ Express Mode</button>
+            <button class="modal-btn blue" onclick="showMapEditionModal()">🗺️ Full Mode</button>
+            <button class="modal-btn close-modal" onclick="closeModals()">Đóng</button>
+        </div>
+    </div>
+
+    <!-- Popup 2: Map Edition -->
+    <div id="mapEditionModal" class="modal">
+        <div class="modal-content">
+            <h3>Map Edition</h3>
+            <button class="modal-btn" onclick="createMap('Standard')"><b>Standard</b><br><small>For all phone models</small></button>
+            <button class="modal-btn" onclick="createMap('Advanced')"><b>Advanced</b><br><small>For high end phone models</small></button>
+            <button class="modal-btn" onclick="createMap('1945')"><b>1945</b><br><small>For all phone models</small></button>
+            <button class="modal-btn" onclick="createMap('1914')"><b>1914</b><br><small>For all phone models</small></button>
+            <button class="modal-btn" onclick="createMap('Empty Map')"><b>Empty Map</b><br><small>For all phone models</small></button>
+            <button class="modal-btn close-modal" onclick="closeModals()">Đóng</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
+
