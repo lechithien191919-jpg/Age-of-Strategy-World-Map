@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Age of Strategy - Playing Map</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="game-body">
+    <!-- Thông tin quốc gia đang chọn góc trên bên trái -->
+    <div class="country-top-bar">
+        <span class="flag">🇻🇳</span>
+        <span class="country-name">Vietnam</span>
+        <span class="province-name">Thanh Hóa</span>
+    </div>
+
+    <!-- Bản đồ thế giới (Hiển thị ở giữa) -->
+    <div class="map-view-container">
+        <div class="world-map-placeholder">
+            🗺️ [Bản đồ thế giới - Ranh giới các quốc gia]
+        </div>
+    </div>
+
+    <!-- Thanh công cụ phía dưới -->
+    <div class="bottom-toolbar">
+        <button class="tool-btn" onclick="deleteMap()">❌</button>
+        <button class="tool-btn">↩️</button>
+        <button class="tool-btn">↪️</button>
+        <button class="tool-btn active" onclick="selectTool('hand')">🖱️</button>
+        <button class="tool-btn" onclick="zoomTool()">🔲</button>
+        <button class="tool-btn" onclick="openWarMenu()">⚔️</button>
+        <button class="tool-btn" onclick="goHome()">🏠</button>
+    </div>
+
+    <!-- Bảng Chiến Tranh -->
+    <div id="warModal" class="modal">
+        <div class="modal-content">
+            <h3>Chế độ Chiến Tranh ⚔️</h3>
+            <button class="modal-btn blue" onclick="startWar('manual')">🎯 Tự chọn vùng muốn chiếm</button>
+            <button class="modal-btn blue" onclick="startWar('bot')">🤖 Bot tự động chiếm đất</button>
+            <p class="war-desc">Hệ thống tính toán: Lãnh thổ, Tiền, Binh sĩ, Xe tăng, Máy bay phản công!</p>
+            <button class="modal-btn close-modal" onclick="closeWarMenu()">Đóng</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
