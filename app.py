@@ -16,8 +16,8 @@ HTML_CONTENT = """
             background-color: #0b192c;
             color: #fff;
             overflow: hidden;
+            user-select: none;
         }
-        /* Màn hình chính (Trang chủ) */
         .main-container {
             padding: 20px;
             max-width: 480px;
@@ -45,6 +45,7 @@ HTML_CONTENT = """
             align-items: center;
             color: #8ab4f8;
             font-size: 16px;
+            text-align: center;
         }
         .add-btn {
             position: fixed;
@@ -105,7 +106,7 @@ HTML_CONTENT = """
         }
         .close-modal { background: #ff4d4d; color: white; border: none; text-align: center; }
 
-        /* Màn hình chơi game / Bản đồ */
+        /* Màn hình game chứa hình bản đồ và ranh giới */
         .game-body { display: none; flex-direction: column; height: 100vh; position: relative; }
         .country-top-bar {
             position: absolute;
@@ -114,10 +115,10 @@ HTML_CONTENT = """
             background: rgba(0,0,0,0.8);
             padding: 6px 12px;
             border-radius: 20px;
-            font-size: 14px;
+            font-size: 13px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             border: 1px solid rgba(255,255,255,0.2);
             z-index: 10;
         }
@@ -132,23 +133,74 @@ HTML_CONTENT = """
             border: 1px solid rgba(255,255,255,0.2);
             z-index: 10;
         }
-        .map-view-container {
+        
+        /* Khung chứa hình bản đồ thế giới và lớp ranh giới */
+        .map-container-wrapper {
             flex: 1;
             display: flex;
             justify-content: center;
             align-items: center;
-            background: #1b263b;
+            background: #0b192c;
             position: relative;
+            padding-top: 50px;
             overflow: hidden;
         }
-        .world-map-canvas {
-            font-size: 18px;
-            color: #769fcd;
-            text-align: center;
-            padding: 20px;
-            line-height: 1.6;
+        .map-image-container {
+            position: relative;
+            max-width: 95%;
+            max-height: 80vh;
+        }
+        .map-image-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 8px;
+            border: 2px solid #334155;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
         }
         
+        /* Lớp ranh giới vẽ đè lên hình ảnh */
+        .map-overlay-grid {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            gap: 2px;
+            padding: 2px;
+            box-sizing: border-box;
+        }
+        .border-cell {
+            border: 1px dashed rgba(255, 255, 255, 0.4); /* Đường ranh giới mờ đè lên hình */
+            background-color: rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: background 0.1s;
+            border-radius: 3px;
+        }
+        .border-cell:hover {
+            background-color: rgba(230, 57, 70, 0.4);
+            border: 1px solid #e63946;
+        }
+
+        /* Bảng chọn màu tô ranh giới */
+        .color-palette {
+            background: #1e293b;
+            padding: 8px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            align-items: center;
+            border-top: 1px solid #334155;
+        }
+        .color-option {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .color-option.selected { border-color: #fff; transform: scale(1.1); }
+
         /* Thanh công cụ dưới đáy */
         .bottom-toolbar {
             display: flex;
@@ -177,7 +229,7 @@ HTML_CONTENT = """
             <input type="text" placeholder="Search map...">
         </div>
         <div class="empty-state">
-            <p>Chưa có bản đồ nào!<br>Bấm nút <b>+</b> bên dưới để tạo map mới.</p>
+            <p>Chưa có bản đồ nào!<br>Bấm nút <b>+</b> bên dưới để tải bản đồ thế giới.</p>
         </div>
         <button class="add-btn" onclick="showMapModeModal()">+</button>
     </div>
@@ -185,103 +237,22 @@ HTML_CONTENT = """
     <div class="game-body" id="gameScreen">
         <div class="country-top-bar">
             <span>🇻🇳</span>
-            <span><b>Vietnam</b> (Thanh Hóa)</span>
+            <span><b>World Map Editor</b></span>
         </div>
         <div class="world-map-top-badge">
-            🌍 A+ World Map
+            🌍 Custom Borders
         </div>
         
-        <div class="map-view-container" onclick="interactMap()">
-            <div class="world-map-canvas">
-                🗺️ [Bản đồ Thế Giới - 228 Quốc Gia]<br>
-                <small style="color: #a0aec0;">Chạm vào vùng đất để chọn quốc gia & chiến tranh</small>
+        <div class="map-container-wrapper">
+            <div class="map-image-container">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrTyhEwc3Z0pVy9IumMD7D6mv6PBo-87apR_sfoXkKAg&s=10" alt="World Map">
+                
+                <div class="map-overlay-grid" id="overlayGrid"></div>
             </div>
         </div>
 
-        <div class="bottom-toolbar">
-            <button class="tool-btn" onclick="goHome()">❌</button>
-            <button class="tool-btn">↩️</button>
-            <button class="tool-btn">↪️</button>
-            <button class="tool-btn active">🖱️</button>
-            <button class="tool-btn">🔲</button>
-            <button class="tool-btn" onclick="openWarMenu()">⚔️</button>
-            <button class="tool-btn" onclick="saveMap()">💾</button>
-        </div>
-    </div>
-
-    <div id="mapModeModal" class="modal">
-        <div class="modal-content">
-            <h3>Map Options</h3>
-            <button class="modal-btn blue" onclick="showMapEditionModal()">🗺️ New Map</button>
-            <button class="modal-btn blue" onclick="createMap('Sample Map')">📂 Sample Maps</button>
-            <button class="modal-btn close-modal" onclick="closeModals()">Đóng</button>
-        </div>
-    </div>
-
-    <div id="mapEditionModal" class="modal">
-        <div class="modal-content">
-            <h3>Map Edition</h3>
-            <button class="modal-btn" onclick="createMap('Standard')"><b>Standard</b><br><small>For all phone models</small></button>
-            <button class="modal-btn" onclick="createMap('Advanced')"><b>Advanced</b><br><small>For high end phone models</small></button>
-            <button class="modal-btn" onclick="createMap('1945')"><b>1945</b><br><small>For all phone models</small></button>
-            <button class="modal-btn" onclick="createMap('1914')"><b>1914</b><br><small>For all phone models</small></button>
-            <button class="modal-btn" onclick="createMap('Empty Map')"><b>Empty Map</b><br><small>For all phone models</small></button>
-            <button class="modal-btn close-modal" onclick="closeModals()">Đóng</button>
-        </div>
-    </div>
-
-    <div id="warModal" class="modal">
-        <div class="modal-content">
-            <h3>Chế độ Chiến Tranh ⚔️</h3>
-            <button class="modal-btn blue" onclick="alert('Đã bật chế độ tự chọn vùng đánh!'); closeModals();">🎯 Tự chọn vùng muốn chiếm</button>
-            <button class="modal-btn blue" onclick="alert('Bot đang tự động triển khai chiến tranh, xe tăng và máy bay!'); closeModals();">🤖 Bot tự động chiếm đất</button>
-            <button class="modal-btn close-modal" onclick="closeModals()">Đóng</button>
-        </div>
-    </div>
-
-    <script>
-        function showMapModeModal() {
-            document.getElementById('mapModeModal').style.display = 'flex';
-        }
-        function showMapEditionModal() {
-            document.getElementById('mapModeModal').style.display = 'none';
-            document.getElementById('mapEditionModal').style.display = 'flex';
-        }
-        function closeModals() {
-            document.getElementById('mapModeModal').style.display = 'none';
-            document.getElementById('mapEditionModal').style.display = 'none';
-            document.getElementById('warModal').style.display = 'none';
-        }
-        /* Bấm tạo map là nhảy thẳng vô game luôn không rườm rà */
-        function createMap(type) {
-            closeModals();
-            document.getElementById('homeScreen').style.display = 'none';
-            document.getElementById('gameScreen').style.display = 'flex';
-        }
-        function goHome() {
-            if(confirm("Bạn có muốn thoát về màn hình chính không?")) {
-                document.getElementById('gameScreen').style.display = 'none';
-                document.getElementById('homeScreen').style.display = 'flex';
-            }
-        }
-        function openWarMenu() {
-            document.getElementById('warModal').style.display = 'flex';
-        }
-        function saveMap() {
-            alert("Đã lưu bản đồ thành công! 💾");
-        }
-        function interactMap() {
-            // Hiệu ứng chạm đất mở rộng lãnh thổ tương tác
-        }
-    </script>
-</body>
-</html>
-"""
-
-@app.route('/')
-def index():
-    return render_template_string(HTML_CONTENT)
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
-    
+        <div class="color-palette">
+            <div class="color-option selected" style="background: rgba(0,0,0,0.2);" onclick="selectColor('rgba(0,0,0,0.2)', this)" title="Xóa màu"></div>
+            <div class="color-option" style="background: rgba(230,57,70,0.6);" onclick="selectColor('rgba(230,57,70,0.6)', this)"></div>
+            <div class="color-option"
+            
